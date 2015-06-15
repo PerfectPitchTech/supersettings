@@ -101,3 +101,6 @@ class MultiFileConfigParser(configparser.ConfigParser):
 
     def getkeys(self, section):
         return self.getdict(section).keys()
+
+    def getsettings(self, section):
+        return OrderedDict([(str(k).upper(), v) for k, v in self.items(section)])
