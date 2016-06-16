@@ -76,11 +76,13 @@ class MultiFileConfigParser(configparser.ConfigParser):
     def read_configs(self):
         default_config = self.default_file
         etc_config = '/etc/default/{}'.format(self.file_name)
-        try:
-            home_config = os.path.join(os.environ.get('HOME'), '.{}'.format(self.file_name))
-        except AttributeError:
-            log.info('Unable to load home configs.')
-            home_config = None
+        home_config = None
+        if "HOME" in os.environ:
+            try:
+                home_config = os.path.join(os.environ.get('HOME'), '.{}'.format(self.file_name))
+            except AttributeError:
+                log.info('Unable to load home configs.')
+
         config_files = [default_config, etc_config, home_config]
         for cf in config_files:
             self.add_config_file(cf)
