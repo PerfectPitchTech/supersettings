@@ -51,12 +51,13 @@ class MultiFileConfigParser(configparser.ConfigParser):
     file_name = None
     _DEFAULT_INTERPOLATION = configparser.ExtendedInterpolation()
 
-    def __init__(self, file_name, default_file=None, *args, **kwargs):
+    def __init__(self, file_name, default_file=None, auto_read=True, *args, **kwargs):
         self.file_name = file_name
         self.default_file = default_file
         super(configparser.ConfigParser, self).__init__(*args, **kwargs)
         self.config_files = []
-        self.read_configs()
+        if auto_read:
+            self.read_configs()
 
     def add_config_file(self, path, required=False):
         if path:
