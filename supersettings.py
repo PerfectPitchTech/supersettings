@@ -14,7 +14,10 @@ For help with config files please see:
 https://docs.python.org/2/library/configparser.html
 
 """
-import configparser
+try:
+    import ConfigParser as configparser
+except ImportError:
+    import configparser
 from collections import OrderedDict
 
 import os
@@ -27,7 +30,14 @@ log = logging.getLogger(__name__)
 
 SECTION_REGEX = re.compile('%\((\w+):(\w+)\)s')
 
-__author__ = 'gdoermann'
+
+def resolve_string(str, context=None):
+    if context:
+        str = str.format(**context)
+        if str.startswith('$'):
+            name = str[1:]
+            return context[name]
+    return str
 
 
 class AttrDict(dict):
@@ -107,3 +117,7 @@ class MultiFileConfigParser(configparser.ConfigParser):
 
     def getsettings(self, section):
         return OrderedDict([(str(k).upper(), v) for k, v in self.items(section)])
+
+    def items(self, section=configparser._UNSET, raw=False, vars=None, context=None):
+        items = super(MultiFileConfigParser, self).items(section, raw, vars)
+        return [(resolve_string(k, context), resolve_string(v, context)) for k, v in items]
