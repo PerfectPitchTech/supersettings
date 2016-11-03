@@ -22,7 +22,6 @@ import logging
 import re
 import traceback
 
-
 log = logging.getLogger(__name__)
 
 SECTION_REGEX = re.compile('%\((\w+):(\w+)\)s')
@@ -38,8 +37,6 @@ def resolve_string(str, context=None):
             name = str[1:]
             return context[name]
     return str
-
-
 
 
 class AttrDict(dict):
@@ -132,8 +129,7 @@ class MultiFileConfigParser(configparser.ConfigParser):
                 key_formatter=lambda k, c: resolve_string(str(k).upper()))
         )
 
-    def items(self, section=configparser._UNSET, raw=False, vars=None, context=None, key_formatter=None,
-              value_formatter=None):
+    def items(self, section, raw=False, vars=None, context=None, key_formatter=None, value_formatter=None):
         key_formatter = key_formatter or resolve_string
         value_formatter = value_formatter or resolve_string
         items = super(MultiFileConfigParser, self).items(section, raw, vars)
