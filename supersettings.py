@@ -14,10 +14,7 @@ For help with config files please see:
 https://docs.python.org/2/library/configparser.html
 
 """
-try:
-    import ConfigParser as configparser
-except ImportError:
-    import configparser
+from six.moves import configparser
 from collections import OrderedDict
 
 import os
@@ -33,11 +30,16 @@ SECTION_REGEX = re.compile('%\((\w+):(\w+)\)s')
 
 def resolve_string(str, context=None):
     if context:
-        str = str.format(**context)
-        if str.startswith('$'):
+        try:
+            str = str.format(**context)
+        except KeyError:
+            raise
+        if str.startswith('$') or str.startswith('%'):
             name = str[1:]
             return context[name]
     return str
+
+
 
 
 class AttrDict(dict):
@@ -98,6 +100,12 @@ class MultiFileConfigParser(configparser.ConfigParser):
         for cf in config_files:
             self.add_config_file(cf)
 
+    def get(self, section, option, raw=False, vars=None, fallback=None, context=None):
+        v = super(MultiFileConfigParser, self).get(section, option, raw=raw, vars=vars, fallback=fallback)
+        if context:
+            v = resolve_string(v, context)
+        return v
+
     def gettuple(self, section, option, delimiter=','):
         val = self.get(section, option)
         return tuple([v.strip() for v in val.split(delimiter) if v])
@@ -115,9 +123,35 @@ class MultiFileConfigParser(configparser.ConfigParser):
     def getkeys(self, section):
         return self.getdict(section).keys()
 
-    def getsettings(self, section):
-        return OrderedDict([(str(k).upper(), v) for k, v in self.items(section)])
+    def getsettings(self, section, context=None):
+        return OrderedDict(
+            self.items(
+                section,
+                context=context,
+                key_formatter=lambda k, c: resolve_string(str(k).upper()))
+        )
 
-    def items(self, section=configparser._UNSET, raw=False, vars=None, context=None):
+    def items(self, section=configparser._UNSET, raw=False, vars=None, context=None, key_formatter=None,
+              value_formatter=None):
+        key_formatter = key_formatter or resolve_string
+        value_formatter = value_formatter or resolve_string
         items = super(MultiFileConfigParser, self).items(section, raw, vars)
-        return [(resolve_string(k, context), resolve_string(v, context)) for k, v in items]
+        return [(key_formatter(k, context), value_formatter(v, context)) for k, v in items]
+
+    def getenv(self, section, option, key=None, type=str, context=None):
+        """
+        Try and get the option out of os.enviorn and cast it, otherwise return the default (casted)
+        :param section: settings section name
+        :param option: the name of the option
+        :param key: The name of the os.enviorn key.  Defaults to option.
+        :param type: the type to cast it to
+        :return: parsed value
+        """
+        if key is None:
+            key = option
+        value = os.environ.get(key, None)
+        try:
+            return type(value)
+        except TypeError:
+            pass
+        return type(self.get(section, option, context=context))
