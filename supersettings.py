@@ -64,7 +64,7 @@ class MultiFileConfigParser(configparser.ConfigParser):
     def __init__(self, file_name, default_file=None, auto_read=True, *args, **kwargs):
         self.file_name = file_name
         self.default_file = default_file
-        super(configparser.ConfigParser, self).__init__(*args, **kwargs)
+        super(MultiFileConfigParser, self).__init__(*args, **kwargs)
         self.config_files = []
         if auto_read:
             self.read_configs()
