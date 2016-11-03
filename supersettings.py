@@ -61,7 +61,8 @@ class MultiFileConfigParser(configparser.ConfigParser):
         {variable} will be formatted as a string out of the context.
     """
     file_name = None
-    _DEFAULT_INTERPOLATION = configparser.ExtendedInterpolation()
+    if hasattr(configparser, 'ExtendedInterpolation'):
+        _DEFAULT_INTERPOLATION = configparser.ExtendedInterpolation()
 
     def __init__(self, file_name, default_file=None, auto_read=True, *args, **kwargs):
         self.file_name = file_name
