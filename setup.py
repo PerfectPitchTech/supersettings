@@ -10,5 +10,6 @@ setup(name='supersettings',
       author='Greg Doermann',
       author_email='gdoermann@gmail.com',
       url='https://github.com/gdoermann/supersettings',
-      py_modules = ['supersettings', ]
-)
+      py_modules=['supersettings', ],
+      install_requires=['configparser'],
+      )
