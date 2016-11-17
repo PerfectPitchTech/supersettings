@@ -99,7 +99,7 @@ class SuperInterpolator(configparser.ExtendedInterpolation):
                     raise from_none(InterpolationMissingOptionError(
                         option, section, rawval, ":".join(path)))
 
-                if "$" in v:
+                if v and "$" in v:
                     self._interpolate_some(parser, opt, accum, v, sect,
                                            dict(parser.items(sect, raw=True)),
                                            depth + 1, context=context)
