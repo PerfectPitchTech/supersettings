@@ -235,7 +235,7 @@ class MultiFileConfigParser(configparser.ConfigParser):
         return ((option, value_getter(option)) for option in d.keys())
 
 
-    def getenv(self, section, option, key=None, type=str):
+    def getenv(self, section, option, key=None, type=str, context=None):
         """
         Try and get the option out of os.enviorn and cast it, otherwise return the default (casted)
         :param section: settings section name
@@ -247,8 +247,12 @@ class MultiFileConfigParser(configparser.ConfigParser):
         if key is None:
             key = option
         value = os.environ.get(key, None)
-        try:
+
+        if value is not None:
+            try:
+                return type(value)
+            except TypeError:
+                pass
+        value = self.get(section, option, context=context)
+        if value:
             return type(value)
-        except TypeError:
-            pass
-        return type(self.get(section, option))
