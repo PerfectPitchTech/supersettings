@@ -21,7 +21,10 @@ import traceback
 from collections import OrderedDict
 import six
 
-from backports import configparser
+if six.PY2:
+    from backports import configparser
+else:
+    import configparser
 from backports.configparser import NoOptionError, InterpolationSyntaxError, InterpolationDepthError, \
     MAX_INTERPOLATION_DEPTH, NoSectionError, InterpolationMissingOptionError, from_none, _UNSET
 
