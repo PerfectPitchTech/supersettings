@@ -23,10 +23,20 @@ import six
 
 if six.PY2:
     from backports import configparser
+    from backports.configparser import NoOptionError, InterpolationSyntaxError, InterpolationDepthError, \
+        MAX_INTERPOLATION_DEPTH, NoSectionError, InterpolationMissingOptionError, _UNSET
 else:
     import configparser
-from backports.configparser import NoOptionError, InterpolationSyntaxError, InterpolationDepthError, \
-    MAX_INTERPOLATION_DEPTH, NoSectionError, InterpolationMissingOptionError, from_none, _UNSET
+    from configparser import NoOptionError, InterpolationSyntaxError, InterpolationDepthError, \
+        MAX_INTERPOLATION_DEPTH, NoSectionError, InterpolationMissingOptionError, _UNSET
+
+
+def from_none(exc):
+    """raise from_none(ValueError('a')) == raise ValueError('a') from None"""
+    exc.__cause__ = None
+    exc.__suppress_context__ = True
+    return exc
+
 
 log = logging.getLogger(__name__)
 
